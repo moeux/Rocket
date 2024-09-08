@@ -1,0 +1,6 @@
+﻿services:
+  rocket:
+    image: rocket
+    build:
+      context: .
+      dockerfile: Rocket/Dockerfile
