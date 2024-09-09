@@ -48,11 +48,10 @@ internal static class Program
 
     private static async Task CreateSlashCommands()
     {
-        var path = Path.GetFullPath(GetEnvironmentVariable("ROCKET_COMMAND_PATH", "/commands"));
+        var path = Path.GetFullPath(GetEnvironmentVariable("ROCKET_COMMAND_PATH", "config"));
         var directoryInfo = new DirectoryInfo(path);
-        var files = directoryInfo.GetFiles();
 
-        if (!directoryInfo.Exists || files.Length == 0)
+        if (!directoryInfo.Exists)
         {
             _logger.Warning("No commands found under `{Path}`", path);
             return;
