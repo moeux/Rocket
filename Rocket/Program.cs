@@ -65,6 +65,9 @@ internal static class Program
             return JsonConvert.DeserializeObject<CommandConfig>(content);
         });
         var commandConfigs = await Task.WhenAll(commandDeserializationTasks);
+
+        _logger.Information("Found {CommandConfigs} command configs under `{Path}`", commandConfigs.Length, path);
+
         var commandCreationTasks = commandConfigs
             .Where(commandConfig => commandConfig != null)
             .Where(commandConfig => existingCommands.All(command => command.Name != commandConfig!.Name))
@@ -81,7 +84,6 @@ internal static class Program
         var commands = await Task.WhenAll(commandCreationTasks);
         var skipped = commandConfigs.Length - commands.Length;
 
-        _logger.Information("Found {CommandConfigs} command configs under `{Path}`", commandConfigs.Length, path);
         _logger.Information("Created {Commands} new and skipped {Skipped} existing commands", commands.Length, skipped);
     }
 
