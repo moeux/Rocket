@@ -43,7 +43,8 @@ internal static class Program
 
     private static string GetEnvironmentVariable(string name, string fallback = "")
     {
-        return Environment.GetEnvironmentVariable(name) ?? fallback;
+        var value = Environment.GetEnvironmentVariable(name);
+        return string.IsNullOrWhiteSpace(value) ? fallback : value;
     }
 
     private static async Task CreateSlashCommands()
