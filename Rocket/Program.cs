@@ -1,5 +1,7 @@
 ﻿using Discord;
 using Discord.WebSocket;
+using Newtonsoft.Json;
+using Rocket.Commands;
 using Serilog;
 using Serilog.Core;
 
@@ -31,7 +33,10 @@ internal static class Program
             return;
         }
 
-        await InitializeDiscordClient(token);
+        InitializeDiscordClient();
+
+        await _client.LoginAsync(TokenType.Bot, token);
+        await _client.StartAsync();
 
         await Task.Delay(Timeout.Infinite);
     }
@@ -41,7 +46,47 @@ internal static class Program
         return Environment.GetEnvironmentVariable(name) ?? fallback;
     }
 
-    private static async Task InitializeDiscordClient(string token)
+    private static async Task CreateSlashCommands()
+    {
+        var path = Path.GetFullPath(GetEnvironmentVariable("ROCKET_COMMAND_PATH", "/commands"));
+        var directoryInfo = new DirectoryInfo(path);
+        var files = directoryInfo.GetFiles();
+
+        if (!directoryInfo.Exists || files.Length == 0)
+        {
+            _logger.Warning("No commands found under `{Path}`", path);
+            return;
+        }
+
+        var existingCommands = await _client.GetGlobalApplicationCommandsAsync();
+        var commandDeserializationTasks = directoryInfo.GetFiles().Select(async file =>
+        {
+            using var reader = file.OpenText();
+            var content = await reader.ReadToEndAsync();
+            return JsonConvert.DeserializeObject<CommandConfig>(content);
+        });
+        var commandConfigs = await Task.WhenAll(commandDeserializationTasks);
+        var commandCreationTasks = commandConfigs
+            .Where(commandConfig => commandConfig != null)
+            .Where(commandConfig => existingCommands.All(command => command.Name != commandConfig!.Name))
+            .Select(commandConfig =>
+            {
+                var command = commandConfig!.ToSlashCommand();
+
+                if (!commandConfig.IsGuildCommand)
+                    return _client.CreateGlobalApplicationCommandAsync(command);
+
+                var guild = _client.GetGuild(commandConfig.GuildId.GetValueOrDefault());
+                return guild.CreateApplicationCommandAsync(command);
+            });
+        var commands = await Task.WhenAll(commandCreationTasks);
+        var skipped = commandConfigs.Length - commands.Length;
+
+        _logger.Information("Found {CommandConfigs} command configs under `{Path}`", commandConfigs.Length, path);
+        _logger.Information("Created {Commands} new and skipped {Skipped} existing commands", commands.Length, skipped);
+    }
+
+    private static void InitializeDiscordClient()
     {
         _client.Log += message =>
         {
@@ -72,10 +117,11 @@ internal static class Program
 
             return Task.CompletedTask;
         };
-
-        await _client.LoginAsync(TokenType.Bot, token);
-        await _client.StartAsync();
-        await _client.SetCustomStatusAsync("Ready for takeoff!");
-        await _client.SetStatusAsync(UserStatus.DoNotDisturb);
+        _client.Ready += CreateSlashCommands;
+        _client.Ready += async () =>
+        {
+            await _client.SetCustomStatusAsync("Ready for takeoff!");
+            await _client.SetStatusAsync(UserStatus.DoNotDisturb);
+        };
     }
 }
