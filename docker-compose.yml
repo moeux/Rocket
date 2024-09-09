@@ -4,3 +4,7 @@
     build:
       context: .
       dockerfile: Rocket/Dockerfile
+    environment:
+      ROCKET_LOG_FILE: ""
+      ROCKET_DISCORD_TOKEN: ""
+      ROCKET_COMMAND_PATH: ""
