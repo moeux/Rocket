@@ -1,7 +1,8 @@
 ﻿using Discord;
 using Discord.WebSocket;
 using Newtonsoft.Json;
-using Rocket.Commands;
+using Rocket.Commands.Config;
+using Rocket.Commands.Handler;
 using Serilog;
 using Serilog.Core;
 
@@ -11,6 +12,7 @@ internal static class Program
 {
     private static DiscordSocketClient _client = null!;
     private static Logger _logger = null!;
+    private static DefaultCommandHandler _commandHandler = null!;
 
     private static async Task Main()
     {
@@ -25,6 +27,7 @@ internal static class Program
             .WriteTo.File(GetEnvironmentVariable("ROCKET_LOG_FILE", "rocket-.log"),
                 rollingInterval: RollingInterval.Day)
             .CreateLogger();
+        _commandHandler = new DefaultCommandHandler();
         var token = GetEnvironmentVariable("ROCKET_DISCORD_TOKEN");
 
         if (string.IsNullOrWhiteSpace(token))
@@ -88,6 +91,13 @@ internal static class Program
         _logger.Information("Created {Commands} new and skipped {Skipped} existing commands", commands.Length, skipped);
     }
 
+    private static Task RegisterSlashCommandHandler()
+    {
+        _commandHandler.Register(new AssignCommandHandler());
+
+        return Task.CompletedTask;
+    }
+
     private static void InitializeDiscordClient()
     {
         _client.Log += message =>
@@ -120,10 +130,12 @@ internal static class Program
             return Task.CompletedTask;
         };
         _client.Ready += CreateSlashCommands;
+        _client.Ready += RegisterSlashCommandHandler;
         _client.Ready += async () =>
         {
             await _client.SetCustomStatusAsync("Ready for takeoff!");
             await _client.SetStatusAsync(UserStatus.DoNotDisturb);
         };
+        _client.SlashCommandExecuted += command => _commandHandler.HandleAsync(command);
     }
 }
