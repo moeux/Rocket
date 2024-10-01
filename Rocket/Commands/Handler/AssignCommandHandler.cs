@@ -74,8 +74,9 @@ public class AssignCommandHandler : ICommandHandler
 
     private static bool IsPrivilegedRole(SocketRole role)
     {
-        return role is { IsEveryone: true, IsManaged: true } ||
+        return role is { IsEveryone: true } ||
+               role is { IsManaged: true } ||
                role.Permissions.Has(GuildPermission.Administrator) ||
-               role.Guild.CurrentUser.Roles.All(botRole => botRole.Position >= role.Position);
+               role.Guild.CurrentUser.Roles.All(botRole => botRole.Position <= role.Position);
     }
 }
