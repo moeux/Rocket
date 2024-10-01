@@ -2,7 +2,7 @@ using Discord;
 using Newtonsoft.Json;
 using static Rocket.Utils.EnumParser;
 
-namespace Rocket.Commands;
+namespace Rocket.Commands.Config;
 
 public class CommandConfig
 {

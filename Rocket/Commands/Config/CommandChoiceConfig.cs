@@ -1,4 +1,4 @@
-namespace Rocket.Commands;
+namespace Rocket.Commands.Config;
 
 public class CommandChoiceConfig
 {

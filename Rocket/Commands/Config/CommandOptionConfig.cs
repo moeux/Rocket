@@ -1,7 +1,7 @@
 using Discord;
 using static Rocket.Utils.EnumParser;
 
-namespace Rocket.Commands;
+namespace Rocket.Commands.Config;
 
 public class CommandOptionConfig
 {
