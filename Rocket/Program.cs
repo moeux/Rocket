@@ -3,6 +3,7 @@ using Discord.WebSocket;
 using Newtonsoft.Json;
 using Rocket.Commands.Config;
 using Rocket.Commands.Handler;
+using Rocket.Utils;
 using Serilog;
 using Serilog.Core;
 
@@ -24,11 +25,11 @@ internal static class Program
         });
         _logger = new LoggerConfiguration()
             .WriteTo.Console()
-            .WriteTo.File(GetEnvironmentVariable("ROCKET_LOG_FILE", "rocket-.log"),
+            .WriteTo.File(EnvironmentUtils.GetVariable("ROCKET_LOG_FILE", "rocket-.log"),
                 rollingInterval: RollingInterval.Day)
             .CreateLogger();
         _commandHandler = new DefaultCommandHandler();
-        var token = GetEnvironmentVariable("ROCKET_DISCORD_TOKEN");
+        var token = EnvironmentUtils.GetVariable("ROCKET_DISCORD_TOKEN");
 
         if (string.IsNullOrWhiteSpace(token))
         {
@@ -44,15 +45,9 @@ internal static class Program
         await Task.Delay(Timeout.Infinite);
     }
 
-    private static string GetEnvironmentVariable(string name, string fallback = "")
-    {
-        var value = Environment.GetEnvironmentVariable(name);
-        return string.IsNullOrWhiteSpace(value) ? fallback : value;
-    }
-
     private static async Task CreateSlashCommands()
     {
-        var path = Path.GetFullPath(GetEnvironmentVariable("ROCKET_COMMAND_PATH", "config"));
+        var path = Path.GetFullPath(EnvironmentUtils.GetVariable("ROCKET_COMMAND_PATH", "config"));
         var directoryInfo = new DirectoryInfo(path);
 
         if (!directoryInfo.Exists)
