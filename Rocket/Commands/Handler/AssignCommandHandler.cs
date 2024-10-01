@@ -2,6 +2,7 @@ using Discord;
 using Discord.WebSocket;
 using Rocket.Utils;
 using Serilog;
+using Serilog.Sinks.SystemConsole.Themes;
 
 namespace Rocket.Commands.Handler;
 
@@ -18,8 +19,14 @@ public class AssignCommandHandler : ICommandHandler
             .Destructure.ByTransforming<SocketRole>(role => new
                 { role.Id, role.Name, role.Position, Permissions = role.Permissions.RawValue })
             .Enrich.FromLogContext()
-            .WriteTo.Console()
-            .WriteTo.File(EnvironmentUtils.GetVariable("ROCKET_LOG_FILE", "rocket-.log"),
+            .WriteTo.Console(
+                theme: AnsiConsoleTheme.Literate,
+                outputTemplate:
+                "[{Timestamp:HH:mm:ss} {Level:u3}] {Properties:j}{NewLine}{Message:lj}{NewLine}{Exception}")
+            .WriteTo.File(
+                EnvironmentUtils.GetVariable("ROCKET_LOG_FILE", "rocket-.log"),
+                outputTemplate:
+                "[{Timestamp:HH:mm:ss} {Level:u3}] {Properties:j}{NewLine}{Message:lj}{NewLine}{Exception}",
                 rollingInterval: RollingInterval.Day)
             .CreateLogger()
             .ForContext<AssignCommandHandler>();

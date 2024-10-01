@@ -6,6 +6,7 @@ using Rocket.Commands.Handler;
 using Rocket.Utils;
 using Serilog;
 using Serilog.Core;
+using Serilog.Sinks.SystemConsole.Themes;
 
 namespace Rocket;
 
@@ -24,8 +25,9 @@ internal static class Program
             GatewayIntents = GatewayIntents.Guilds
         });
         _logger = new LoggerConfiguration()
-            .WriteTo.Console()
-            .WriteTo.File(EnvironmentUtils.GetVariable("ROCKET_LOG_FILE", "rocket-.log"),
+            .WriteTo.Console(theme: AnsiConsoleTheme.Literate)
+            .WriteTo.File(
+                EnvironmentUtils.GetVariable("ROCKET_LOG_FILE", "rocket-.log"),
                 rollingInterval: RollingInterval.Day)
             .CreateLogger();
         _commandHandler = new DefaultCommandHandler();
