@@ -1,20 +1,28 @@
 using Discord;
 using Discord.WebSocket;
+using Rocket.Utils;
 using Serilog;
-using Serilog.Core;
 
 namespace Rocket.Commands.Handler;
 
 public class AssignCommandHandler : ICommandHandler
 {
-    private readonly Logger _logger;
+    private readonly ILogger _logger;
 
     public AssignCommandHandler()
     {
-        _logger = _logger = new LoggerConfiguration()
+        _logger = new LoggerConfiguration()
+            .Destructure.ByTransformingWhere<dynamic>(type => typeof(SocketUser).IsAssignableFrom(type),
+                user => new { user.Id, user.Username })
+            .Destructure.ByTransforming<SocketSlashCommand>(command => new { command.Id, command.CommandName })
+            .Destructure.ByTransforming<SocketRole>(role => new
+                { role.Id, role.Name, role.Position, Permissions = role.Permissions.RawValue })
+            .Enrich.FromLogContext()
             .WriteTo.Console()
-            .WriteTo.File("", rollingInterval: RollingInterval.Day)
-            .CreateLogger();
+            .WriteTo.File(EnvironmentUtils.GetVariable("ROCKET_LOG_FILE", "rocket-.log"),
+                rollingInterval: RollingInterval.Day)
+            .CreateLogger()
+            .ForContext<AssignCommandHandler>();
     }
 
     public string CommandName => "assign";
@@ -22,6 +30,7 @@ public class AssignCommandHandler : ICommandHandler
 
     public async Task<string> HandleAsync(SocketSlashCommand command)
     {
+        var logger = _logger.ForContext("Token", command.Token);
         var response = command.UserLocale == "de"
             ? "Etwas ist schiefgelaufen"
             : "Something went wrong";
@@ -30,19 +39,17 @@ public class AssignCommandHandler : ICommandHandler
 
         if (options == null || options.Count == 0)
         {
-            _logger.Error("Received empty command options");
+            logger.Error("Received empty command options");
             return response;
         }
 
         if (option is not { Type: ApplicationCommandOptionType.Role } || option.Value is not SocketRole role)
         {
-            _logger.Error("Expected role but got {Type}: {Value}", option?.Type, option?.Value);
+            logger.Error("Expected role but got {Type}: {$Value}", option?.Type, option?.Value);
             return response;
         }
 
-        _logger.Information(
-            "User {Username} executed command {CommandName} with role {Role}",
-            command.User.Username, command.CommandName, role);
+        logger.Information("User {@User} executed command {@Command} with role {@Role}", command.User, command, role);
 
         var user = role.Guild.GetUser(command.User.Id);
 
@@ -58,7 +65,7 @@ public class AssignCommandHandler : ICommandHandler
 
         await user.AddRoleAsync(role);
 
-        _logger.Information("Assigned role {Role} to user {User}", role, user);
+        logger.Information("Assigned role {@Role} to user {@User}", role, user);
 
         return command.UserLocale == "de"
             ? $"Du wurdest der Rolle {role.Mention} zugewiesen"

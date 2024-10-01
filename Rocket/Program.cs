@@ -52,7 +52,7 @@ internal static class Program
 
         if (!directoryInfo.Exists)
         {
-            _logger.Warning("No commands found under `{Path}`", path);
+            _logger.Warning("No commands found under {Path}", path);
             return;
         }
 
@@ -65,7 +65,7 @@ internal static class Program
         });
         var commandConfigs = await Task.WhenAll(commandDeserializationTasks);
 
-        _logger.Information("Found {CommandConfigs} command configs under `{Path}`", commandConfigs.Length, path);
+        _logger.Information("Found {CommandConfigs} command configs under {Path}", commandConfigs.Length, path);
 
         var commandCreationTasks = commandConfigs
             .Where(commandConfig => commandConfig != null)
