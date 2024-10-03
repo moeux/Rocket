@@ -29,10 +29,10 @@ internal static class Program
         _logger = new LoggerConfiguration()
             .WriteTo.Console(theme: AnsiConsoleTheme.Literate)
             .WriteTo.File(
-                EnvironmentUtils.GetVariable("ROCKET_LOG_FILE", "rocket-.log"),
+                logPath,
                 rollingInterval: RollingInterval.Day)
             .CreateLogger();
-        _commandHandler = new DefaultCommandHandler();
+        _commandHandler = new DefaultCommandHandler(logPath: logPath);
         var token = EnvironmentUtils.GetVariable("ROCKET_DISCORD_TOKEN");
 
         if (string.IsNullOrWhiteSpace(token))

@@ -1,5 +1,6 @@
 ﻿services:
   rocket:
+    container_name: "rocket"
     image: rocket
     build:
       context: .
@@ -8,3 +9,6 @@
       ROCKET_LOG_FILE: ""
       ROCKET_DISCORD_TOKEN: ""
       ROCKET_COMMAND_PATH: ""
+#    volumes:
+#      - ./logs:/logs:rw
+#      - ./configs:/configs:ro
