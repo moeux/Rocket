@@ -6,7 +6,6 @@ using Rocket.Commands;
 using Serilog;
 using Serilog.Core;
 using Serilog.Sinks.SystemConsole.Themes;
-using EnvironmentUtils = AutoCommand.Utils.EnvironmentUtils;
 
 namespace Rocket;
 
