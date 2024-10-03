@@ -1,7 +1,7 @@
 using AutoCommand.Handler;
+using AutoCommand.Utils;
 using Discord;
 using Discord.WebSocket;
-using Rocket.Utils;
 using Serilog;
 using Serilog.Sinks.SystemConsole.Themes;
 
