@@ -1,8 +1,9 @@
-﻿using Discord;
+﻿using AutoCommand.Config;
+using AutoCommand.Handler;
+using Discord;
 using Discord.WebSocket;
 using Newtonsoft.Json;
-using Rocket.Commands.Config;
-using Rocket.Commands.Handler;
+using Rocket.Commands;
 using Rocket.Utils;
 using Serilog;
 using Serilog.Core;
@@ -24,6 +25,7 @@ internal static class Program
             LogLevel = LogSeverity.Info,
             GatewayIntents = GatewayIntents.Guilds
         });
+        var logPath = EnvironmentUtils.GetVariable("ROCKET_LOG_FILE", "rocket-.log");
         _logger = new LoggerConfiguration()
             .WriteTo.Console(theme: AnsiConsoleTheme.Literate)
             .WriteTo.File(

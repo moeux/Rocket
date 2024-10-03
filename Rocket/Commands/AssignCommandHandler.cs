@@ -1,10 +1,11 @@
+using AutoCommand.Handler;
 using Discord;
 using Discord.WebSocket;
 using Rocket.Utils;
 using Serilog;
 using Serilog.Sinks.SystemConsole.Themes;
 
-namespace Rocket.Commands.Handler;
+namespace Rocket.Commands;
 
 public class AssignCommandHandler : ICommandHandler
 {
