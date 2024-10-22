@@ -1,5 +1,4 @@
 using AutoCommand.Handler;
-using AutoCommand.Utils;
 using Discord;
 using Discord.WebSocket;
 using Serilog;
@@ -11,7 +10,7 @@ public class AssignCommandHandler : ICommandHandler
 {
     private readonly ILogger _logger;
 
-    public AssignCommandHandler()
+    public AssignCommandHandler(string logPath)
     {
         _logger = new LoggerConfiguration()
             .Destructure.ByTransformingWhere<dynamic>(type => typeof(SocketUser).IsAssignableFrom(type),
@@ -25,7 +24,7 @@ public class AssignCommandHandler : ICommandHandler
                 outputTemplate:
                 "[{Timestamp:HH:mm:ss} {Level:u3}] {Properties:j}{NewLine}{Message:lj}{NewLine}{Exception}")
             .WriteTo.File(
-                EnvironmentUtils.GetVariable("ROCKET_LOG_FILE", "rocket-.log"),
+                logPath,
                 outputTemplate:
                 "[{Timestamp:HH:mm:ss} {Level:u3}] {Properties:j}{NewLine}{Message:lj}{NewLine}{Exception}",
                 rollingInterval: RollingInterval.Day)

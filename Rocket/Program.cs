@@ -80,7 +80,7 @@ internal static class Program
         Client.Ready += () => Client.CreateSlashCommands(CommandPath);
         Client.Ready += () =>
         {
-            CommandHandler.Register(new AssignCommandHandler());
+            CommandHandler.Register(new AssignCommandHandler(LogPath));
             Client.SlashCommandExecuted += command => CommandHandler.HandleAsync(command);
             return Task.CompletedTask;
         };
