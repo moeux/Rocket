@@ -6,9 +6,10 @@
       context: .
       dockerfile: Rocket/Dockerfile
     environment:
+      ROCKET_COMMAND_PATH: ""
       ROCKET_LOG_FILE: ""
       ROCKET_DISCORD_TOKEN: ""
-      ROCKET_COMMAND_PATH: ""
+      ROCKET_DYNAMIC_CHANNEL_NAME: ""
 #    volumes:
 #      - ./logs:/logs:rw
 #      - ./configs:/configs:ro
