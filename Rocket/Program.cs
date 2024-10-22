@@ -3,6 +3,7 @@ using AutoCommand.Utils;
 using Discord;
 using Discord.WebSocket;
 using Rocket.Commands;
+using Rocket.Handler;
 using Serilog;
 using Serilog.Core;
 using Serilog.Sinks.SystemConsole.Themes;
@@ -20,7 +21,7 @@ internal static class Program
     {
         DefaultRetryMode = RetryMode.RetryRatelimit,
         LogLevel = LogSeverity.Info,
-        GatewayIntents = GatewayIntents.Guilds
+        GatewayIntents = GatewayIntents.Guilds | GatewayIntents.GuildVoiceStates
     });
 
     private static readonly Logger Logger = new LoggerConfiguration()
@@ -29,6 +30,7 @@ internal static class Program
         .CreateLogger();
 
     private static readonly DefaultCommandHandler CommandHandler = new(logPath: LogPath);
+    private static readonly DynamicVoiceChannelHandler DynamicVoiceChannelHandler = new(ChannelName, LogPath);
 
     private static async Task Main()
     {
@@ -89,48 +91,9 @@ internal static class Program
             await Client.SetCustomStatusAsync("Ready for takeoff!");
             await Client.SetStatusAsync(UserStatus.DoNotDisturb);
         };
-        Client.UserVoiceStateUpdated += async (_, _, state) => await RestoreVoiceChannels(state);
-    }
-
-    private static async Task RestoreVoiceChannels(SocketVoiceState state)
-    {
-        if (state.VoiceChannel.Category is not SocketCategoryChannel category
-            || category.GetPermissionOverwrite(Client.CurrentUser) is not { ManageChannel: PermValue.Allow })
-            return;
-
-        var emptyChannels = category.Channels.Where(channel => channel.Users.Count == 0).ToArray();
-
-        switch (emptyChannels.Length)
-        {
-            case > 1:
-                var orderedChannels = emptyChannels.OrderByDescending(channel => channel.Position).ToArray();
-                var removeChannels = orderedChannels[1..];
-
-                await Task.WhenAll(
-                    removeChannels.Select(channel => channel.DeleteAsync(new RequestOptions
-                    {
-                        AuditLogReason = "Obsolete dynamic voice channel"
-                    }))
-                );
-
-                break;
-            case 0:
-                await category.Guild.CreateVoiceChannelAsync(
-                    ChannelName,
-                    properties =>
-                    {
-                        var position = category.Channels.MaxBy(channel => channel.Position)?.Position;
-
-                        properties.CategoryId = category.Id;
-                        properties.Position = position ?? category.Position + 1;
-                    },
-                    new RequestOptions
-                    {
-                        AuditLogReason = "Created dynamic voice channel"
-                    }
-                );
-
-                break;
-        }
+        Client.UserVoiceStateUpdated += async (_, oldState, newState) =>
+            await DynamicVoiceChannelHandler.RestoreVoiceChannels(
+                oldState.VoiceChannel == null ? newState : oldState,
+                Client.CurrentUser);
     }
 }
