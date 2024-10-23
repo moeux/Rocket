@@ -1,6 +1,7 @@
 using AutoCommand.Handler;
 using Discord;
 using Discord.WebSocket;
+using Rocket.Extensions;
 using Serilog;
 using Serilog.Sinks.SystemConsole.Themes;
 
@@ -60,7 +61,7 @@ public class AssignCommandHandler : ICommandHandler
 
         var user = role.Guild.GetUser(command.User.Id);
 
-        if (IsPrivilegedRole(role))
+        if (role.IsPrivileged())
             return command.UserLocale == "de"
                 ? "Diese Rolle kannst du dir nicht selber zuweisen"
                 : "You can't assign this role to yourself";
@@ -77,13 +78,5 @@ public class AssignCommandHandler : ICommandHandler
         return command.UserLocale == "de"
             ? $"Du wurdest der Rolle {role.Mention} zugewiesen"
             : $"You've been assigned to the role {role.Mention}";
-    }
-
-    private static bool IsPrivilegedRole(SocketRole role)
-    {
-        return role is { IsEveryone: true } ||
-               role is { IsManaged: true } ||
-               role.Permissions.Has(GuildPermission.Administrator) ||
-               role.Guild.CurrentUser.Roles.All(botRole => botRole.Position <= role.Position);
     }
 }
