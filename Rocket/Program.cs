@@ -14,8 +14,14 @@ internal static class Program
 {
     private static readonly string CommandPath = EnvironmentUtils.GetVariable("ROCKET_COMMAND_PATH", "config");
     private static readonly string LogPath = EnvironmentUtils.GetVariable("ROCKET_LOG_FILE", "rocket-.log");
-    private static readonly string Token = EnvironmentUtils.GetVariable("ROCKET_DISCORD_TOKEN");
+    private static readonly string Token = EnvironmentUtils.GetVariable("PROD_TOKEN");
     private static readonly string ChannelName = EnvironmentUtils.GetVariable("ROCKET_DYNAMIC_CHANNEL_NAME", "Lounge");
+
+    private static readonly string NewsRoleAssignmentButtonId =
+        EnvironmentUtils.GetVariable("ROCKET_NEWS_ROLE_ASSIGNMENT_BUTTON_ID");
+
+    private static readonly string NewsRoleAssignmentRoleId =
+        EnvironmentUtils.GetVariable("ROCKET_NEWS_ROLE_ASSIGNMENT_ROLE_ID");
 
     private static readonly DiscordSocketClient Client = new(new DiscordSocketConfig
     {
@@ -31,6 +37,9 @@ internal static class Program
 
     private static readonly DefaultCommandHandler CommandHandler = new(logPath: LogPath);
     private static readonly DynamicVoiceChannelHandler DynamicVoiceChannelHandler = new(ChannelName, LogPath);
+
+    private static readonly NewsRoleAssignmentButtonHandler NewsRoleAssignmentButtonHandler =
+        new(Client, NewsRoleAssignmentButtonId, NewsRoleAssignmentRoleId, LogPath);
 
     private static async Task Main()
     {
@@ -93,5 +102,6 @@ internal static class Program
         };
         Client.UserVoiceStateUpdated += async (_, oldState, newState) =>
             await DynamicVoiceChannelHandler.RestoreVoiceChannels(oldState, newState);
+        Client.ButtonExecuted += component => NewsRoleAssignmentButtonHandler.Handle(component);
     }
 }
