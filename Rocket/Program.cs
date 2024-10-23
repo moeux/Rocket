@@ -92,6 +92,6 @@ internal static class Program
             await Client.SetStatusAsync(UserStatus.DoNotDisturb);
         };
         Client.UserVoiceStateUpdated += async (_, oldState, newState) =>
-            await DynamicVoiceChannelHandler.RestoreVoiceChannels(oldState, newState, Client.CurrentUser);
+            await DynamicVoiceChannelHandler.RestoreVoiceChannels(oldState, newState);
     }
 }
