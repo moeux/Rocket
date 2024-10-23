@@ -22,7 +22,14 @@ public class DynamicVoiceChannelHandler(string channelName, string logPath)
         .CreateLogger()
         .ForContext<DynamicVoiceChannelHandler>();
 
-    public async Task RestoreVoiceChannels(SocketVoiceState state, SocketSelfUser botUser)
+    public async Task RestoreVoiceChannels(SocketVoiceState oldState, SocketVoiceState newState, SocketSelfUser botUser)
+    {
+        if (oldState.VoiceChannel != null) await Restore(oldState, botUser);
+
+        if (newState.VoiceChannel != null) await Restore(newState, botUser);
+    }
+
+    private async Task Restore(SocketVoiceState state, SocketSelfUser botUser)
     {
         var logger = _logger.ForContext("VoiceSession", state.VoiceSessionId);
 
