@@ -14,7 +14,7 @@ internal static class Program
 {
     private static readonly string CommandPath = EnvironmentUtils.GetVariable("ROCKET_COMMAND_PATH", "config");
     private static readonly string LogPath = EnvironmentUtils.GetVariable("ROCKET_LOG_FILE", "rocket-.log");
-    private static readonly string Token = EnvironmentUtils.GetVariable("PROD_TOKEN");
+    private static readonly string Token = EnvironmentUtils.GetVariable("ROCKET_DISCORD_TOKEN");
     private static readonly string ChannelName = EnvironmentUtils.GetVariable("ROCKET_DYNAMIC_CHANNEL_NAME", "Lounge");
 
     private static readonly string NewsRoleAssignmentButtonId =
