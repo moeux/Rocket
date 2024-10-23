@@ -11,6 +11,7 @@
       ROCKET_DISCORD_TOKEN: ""
       ROCKET_DYNAMIC_CHANNEL_NAME: ""
       ROCKET_NEWS_ROLE_ASSIGNMENT_BUTTON_ID: ""
+      ROCKET_NEWS_ROLE_ASSIGNMENT_ROLE_ID: ""
 #    volumes:
 #      - ./logs:/logs:rw
 #      - ./configs:/configs:ro
